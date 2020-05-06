@@ -2,12 +2,17 @@ package nnpia.seme.service;
 
 import nnpia.seme.dao.CartDao;
 import nnpia.seme.dao.CartItemDao;
+import nnpia.seme.dao.CartPaggingRepository;
 import nnpia.seme.model.Cart;
 import nnpia.seme.model.CartItem;
 import nnpia.seme.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -20,9 +25,13 @@ import java.util.stream.Collectors;
 @Transactional
 public class CartService {
     private List<String> itemList = new ArrayList<>();
+    private long totalPages, totalPagesDone, totalPagesWaiting;
 
     //@Autowired
     private CartDao cartDao;
+
+    @Autowired
+    private CartPaggingRepository cartPagging;
 
     //@Autowired
     private CartItemService cartItemService;
@@ -46,7 +55,7 @@ public class CartService {
     }
 
     public List<Cart> findAllFreeCards() {
-        return cartDao.findAll().stream().filter(cart -> !cart.isDone() && cart.getUser()==null).collect(Collectors.toList());
+        return cartDao.findAll().stream().filter(cart -> !cart.isDone() && cart.getUser() == null).collect(Collectors.toList());
     }
 
     public List<Cart> findAllDoneByUser(Integer id) {
@@ -59,11 +68,11 @@ public class CartService {
         return cartDao.findAll().stream().filter(cart -> !cart.isDone() && cart.getUser().equals(user)).collect(Collectors.toList());
     }
 
-    public int countDoneByUser(Integer id){
+    public int countDoneByUser(Integer id) {
         return findAllDoneByUser(id).size();
     }
 
-    public int countWitingByUser(Integer id){
+    public int countWitingByUser(Integer id) {
         return findAllWaitingByUser(id).size();
     }
 
@@ -75,15 +84,22 @@ public class CartService {
         }
     }
 
-    public List<CartItem> getAllItems(Integer id){
+    public List<CartItem> getAllItems(Integer id) {
         Cart cart = findById(id);
         return new ArrayList<>(cart.getItems());
     }
 
-    public void setCartDone(Integer id){
+    public void setCartDone(Integer id) {
         Cart cart = findById(id);
         cart.setDone(true);
         cartDao.save(cart);
+    }
+
+    public void setCartToUser(Integer idCart, String username) {
+        User user = userService.findOne(username);
+        Cart cart = cartDao.getOne(idCart);
+        cart.setUser(user);
+        Cart c = cartDao.save(cart);
     }
 
     public void addItemToCart(String item) {
@@ -96,11 +112,59 @@ public class CartService {
         cart.setSenior(seniorService.findById(id));
         cartDao.save(cart);
 
-        for (String item: itemList) {
+        for (String item : itemList) {
             cartItemService.addCartItem(item, cart);
         }
 
         itemList.clear();
     }
 
+    public List<Cart> getAllFreeCartsPaSo(Integer pageNo, Integer pageSize, String sortBy) {
+        Pageable paging;
+        switch (sortBy) {
+            case "time":
+                paging = PageRequest.of(pageNo, pageSize, Sort.by("idcart").ascending());
+                break;
+            case "timeDesc":
+                paging = PageRequest.of(pageNo, pageSize, Sort.by("idcart").descending());
+                break;
+            case "city":
+                paging = PageRequest.of(pageNo, pageSize, Sort.by("senior.city"));
+                break;
+            default:
+                paging = PageRequest.of(pageNo, pageSize);
+                break;
+        }
+
+        Page<Cart> pagedResult = cartPagging.findAllByUserId(null ,paging);
+        totalPages = pagedResult.getTotalElements();
+
+        if (pagedResult.hasContent()) {
+            List<Cart> list = pagedResult.getContent();
+
+           /* if (sortBy.equals("city")) {
+                list = list.stream().sorted(Comparator.comparing(o -> o.getSenior().getCity())).collect(Collectors.toList());
+            }*/
+            /*for (Cart c: list) {
+                System.out.println(c.getId()+" "+c.getSenior().getCity());
+            }*/
+
+            return list;
+        } else {
+            return new ArrayList<Cart>();
+        }
+    }
+
+
+    public long getTotalPages() {
+        return totalPages;
+    }
+
+    public long getTotalPagesDone() {
+        return totalPagesDone;
+    }
+
+    public long getTotalPagesWaiting() {
+        return totalPagesWaiting;
+    }
 }

@@ -1,5 +1,6 @@
 package nnpia.seme.controller.rest;
 
+import nnpia.seme.model.ApiResponse;
 import nnpia.seme.model.Cart;
 import nnpia.seme.model.CartGet;
 import nnpia.seme.service.CartService;
@@ -7,6 +8,7 @@ import nnpia.seme.service.SeniorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -15,11 +17,11 @@ import java.util.List;
 @RestController
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 //@RequestMapping("/api/cart")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class CartRestController {
 
     private final CartService cartService;
-    private SeniorService seniorService;
+    private final SeniorService seniorService;
 
     @Autowired
     public CartRestController(CartService cartService, SeniorService seniorService) {
@@ -32,6 +34,20 @@ public class CartRestController {
     public List<Cart> getFreeCart() {
         System.out.println("aaaaaaa");
         return cartService.findAllFreeCards();
+    }
+
+    @RequestMapping(value = "/api/cart/p", method = RequestMethod.GET)
+    public ApiResponse<List<Cart>> getAllCartsPaggingSorting(
+            @RequestParam(defaultValue = "0") Integer pageNo,
+            @RequestParam(defaultValue = "5") Integer pageSize,
+            @RequestParam(defaultValue = "idcart") String sortBy)
+    {
+
+        List<Cart> list = cartService.getAllFreeCartsPaSo(pageNo, pageSize, sortBy);
+        Long totalItems = cartService.getTotalPages();
+        System.out.println(list.size()+" aaaa"+totalItems);
+
+        return new ApiResponse<>(HttpStatus.OK.value(), ""+totalItems, list);
     }
 
     //@GetMapping("{id}")
@@ -56,21 +72,25 @@ public class CartRestController {
         cartService.setCartDone(id);
     }
 
+    @RequestMapping(value = "/api/cart/take", method = RequestMethod.GET)
+    public ApiResponse<Boolean> setCartToUser(
+            @RequestParam Integer id,
+            @RequestParam String username) {
+        cartService.setCartToUser(id, username);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Cart taken successfully.",true);
+    }
+
     //@PostMapping
     @RequestMapping(value = "/public/cart", method = RequestMethod.POST)
-    public boolean createCart(@RequestBody CartGet cartGet) {
-        //System.out.println("popsis "+text);
-        //cartService.addItemToCart(text);
-        System.out.println("cartSenID"+cartGet.getId());
-        System.out.println(cartGet.getItemList().size());
+    public ApiResponse<Boolean> createCart(@RequestBody CartGet cartGet) {
+        int seniorId = seniorService.createSenior(cartGet.getSenior().getEmail(), cartGet.getSenior().getUsername(), cartGet.getSenior().getCity());
 
         for (String s: cartGet.getItemList()) {
-            System.out.println(s);
             cartService.addItemToCart(s);
         }
-        cartService.completeOrder(cartGet.getId());
+        cartService.completeOrder(seniorId);
 
-        return true;
+        return new ApiResponse<>(HttpStatus.OK.value(), "Cart saved successfully.",true);
     }
 
 

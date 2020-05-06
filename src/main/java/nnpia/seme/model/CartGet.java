@@ -6,7 +6,7 @@ import java.util.List;
 
 public class CartGet {
     private Items[] list;
-    private int id;
+    private Senior senior;
 
     public Items[] getList() {
         return list;
@@ -24,13 +24,11 @@ public class CartGet {
         return list;
     }
 
-    public int getId() {
-        return id;
+    public Senior getSenior() {
+        return senior;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setSenior(Senior senior) {
+        this.senior = senior;
     }
-
-
 }

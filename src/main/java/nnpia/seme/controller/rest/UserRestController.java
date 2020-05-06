@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 //@RequestMapping("/api/user")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class UserRestController {
 
     private UserService userService;
