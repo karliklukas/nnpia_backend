@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class CartService {
     private List<String> itemList = new ArrayList<>();
-    private long totalPages, totalPagesDone, totalPagesWaiting;
+    private long totalPages;
 
     //@Autowired
     private CartDao cartDao;
@@ -68,19 +68,23 @@ public class CartService {
         return cartDao.findAll().stream().filter(cart -> !cart.isDone() && cart.getUser().equals(user)).collect(Collectors.toList());
     }
 
-    public int countDoneByUser(Integer id) {
-        return findAllDoneByUser(id).size();
+    public Long countFreeCarts() {
+        return cartDao.countByUserIdAndDone(null, false);
     }
 
-    public int countWitingByUser(Integer id) {
-        return findAllWaitingByUser(id).size();
+    public Long countDoneByUser(Integer id) {
+        return cartDao.countByUserIdAndDone(id, true);
+    }
+
+    public Long countWaitingByUser(Integer id) {
+        return cartDao.countByUserIdAndDone(id, false);
     }
 
     public Cart findById(Integer id) {
         if (cartDao.findById(id).isPresent()) {
             return cartDao.findById(id).get();
         } else {
-            throw new NoSuchElementException("Product with ID: " + id + " was not found!");
+            throw new NoSuchElementException("Order with ID: " + id + " was not found!");
         }
     }
 
@@ -95,31 +99,32 @@ public class CartService {
         cartDao.save(cart);
     }
 
-    public void setCartToUser(Integer idCart, String username) {
+    public Cart setCartToUser(Integer idCart, String username) {
         User user = userService.findOne(username);
         Cart cart = cartDao.getOne(idCart);
         cart.setUser(user);
-        Cart c = cartDao.save(cart);
+        return cartDao.save(cart);
     }
 
     public void addItemToCart(String item) {
         itemList.add(item);
     }
 
-    public void completeOrder(Integer id) {
+    public Integer completeOrder(Integer id) {
         Cart cart = new Cart();
         cart.setDone(false);
         cart.setSenior(seniorService.findById(id));
-        cartDao.save(cart);
+        cart = cartDao.save(cart);
 
         for (String item : itemList) {
             cartItemService.addCartItem(item, cart);
         }
 
         itemList.clear();
+        return cart.getId();
     }
 
-    public List<Cart> getAllFreeCartsPaSo(Integer pageNo, Integer pageSize, String sortBy) {
+    public List<Cart> getAllFreeCartsPaSo(Integer pageNo, Integer pageSize, String sortBy, Integer userId, Boolean done) {
         Pageable paging;
         switch (sortBy) {
             case "time":
@@ -135,21 +140,16 @@ public class CartService {
                 paging = PageRequest.of(pageNo, pageSize);
                 break;
         }
-
-        Page<Cart> pagedResult = cartPagging.findAllByUserId(null ,paging);
+        Page<Cart> pagedResult;
+        if (userId==-1){
+            pagedResult = cartPagging.findAllByUserIdAndDone(null, done ,paging);
+        }else{
+            pagedResult = cartPagging.findAllByUserIdAndDone(userId, done ,paging);
+        }
         totalPages = pagedResult.getTotalElements();
 
         if (pagedResult.hasContent()) {
-            List<Cart> list = pagedResult.getContent();
-
-           /* if (sortBy.equals("city")) {
-                list = list.stream().sorted(Comparator.comparing(o -> o.getSenior().getCity())).collect(Collectors.toList());
-            }*/
-            /*for (Cart c: list) {
-                System.out.println(c.getId()+" "+c.getSenior().getCity());
-            }*/
-
-            return list;
+            return pagedResult.getContent();
         } else {
             return new ArrayList<Cart>();
         }
@@ -158,13 +158,5 @@ public class CartService {
 
     public long getTotalPages() {
         return totalPages;
-    }
-
-    public long getTotalPagesDone() {
-        return totalPagesDone;
-    }
-
-    public long getTotalPagesWaiting() {
-        return totalPagesWaiting;
     }
 }

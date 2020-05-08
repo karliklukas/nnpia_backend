@@ -2,6 +2,7 @@ package nnpia.seme.controller.rest;
 
 import nnpia.seme.model.ApiResponse;
 import nnpia.seme.model.User;
+import nnpia.seme.model.UserEditDto;
 import nnpia.seme.service.CartService;
 import nnpia.seme.service.SeniorService;
 import nnpia.seme.service.UserService;
@@ -13,7 +14,7 @@ import java.util.List;
 
 @RestController
 //@RequestMapping("/api/user")
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class UserRestController {
 
     private UserService userService;
@@ -36,6 +37,17 @@ public class UserRestController {
         return userService.findByEmail(email);
     }
 
+    @PutMapping("/api/user")
+    public ApiResponse<Boolean> updatePassword(@RequestBody UserEditDto user) {
+        System.out.println("put");
+        if (userService.updatePassword(user)){
+            return new ApiResponse<>(HttpStatus.OK.value(), "User updated successfully.", true);
+        }else{
+            return new ApiResponse<>(HttpStatus.CONFLICT.value(), "Wrong password.", false);
+        }
+
+    }
+
     //@PostMapping
     @RequestMapping(value = "/public/user", method = RequestMethod.POST)
     public ApiResponse<User> addUser(@RequestBody User user) {
@@ -46,6 +58,8 @@ public class UserRestController {
             return new ApiResponse<>(HttpStatus.CONFLICT.value(), "Username already exist.", null);
         }
     }
+
+
 
 
 }

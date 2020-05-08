@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class CartGet {
+public class CartDto {
     private Items[] list;
     private Senior senior;
 

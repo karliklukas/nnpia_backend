@@ -2,6 +2,8 @@ package nnpia.seme.service;
 
 import nnpia.seme.dao.UserDao;
 import nnpia.seme.model.User;
+import nnpia.seme.model.UserEditDto;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +30,7 @@ public class UserService implements UserDetailsService {
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userDao.findByUsername(username);
-        if(user == null){
+        if (user == null) {
             throw new UsernameNotFoundException("Invalid username or password.");
         }
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), getAuthority());
@@ -62,11 +64,24 @@ public class UserService implements UserDetailsService {
         return userDao.findByUsername(username);
     }
 
-    public User addUser(String email, String username, String password){
+    public User addUser(String email, String username, String password) {
         User user = new User();
         user.setEmail(email);
         user.setUsername(username);
         user.setPassword(bcryptEncoder.encode(password));
         return userDao.save(user);
+    }
+
+    public boolean updatePassword(UserEditDto userIn) {
+        User user = findOne(userIn.getUsername());
+
+        if (user != null) {
+            if (bcryptEncoder.matches(userIn.getPasswordOld(), user.getPassword())) {
+                user.setPassword(bcryptEncoder.encode(userIn.getPasswordNew()));
+                userDao.save(user);
+                return true;
+            }
+        }
+        return false;
     }
 }
