@@ -13,6 +13,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -44,7 +45,6 @@ public class CartRestController {
 
         List<Cart> list = cartService.getAllFreeCartsPaSo(pageNo, pageSize, sortBy, userId, done);
         Long totalItems = cartService.getTotalPages();
-        System.out.println(list.size()+" aaaa"+totalItems);
 
         return new ApiResponse<>(HttpStatus.OK.value(), ""+totalItems, list);
     }
@@ -90,7 +90,7 @@ public class CartRestController {
         Cart cart = cartService.setCartToUser(id, username);
         Senior senior = cart.getSenior();
         User user = cart.getUser();
-        System.out.println(senior.getEmail()+" "+user.getUsername()+" "+user.getEmail());
+
         Thread t = new Thread(() -> {
             try {
                 emailService.sendSimpleMessage(senior.getEmail(), "BuyForYou - list ID: "+id+" was taken by "+user.getUsername(),
@@ -104,7 +104,7 @@ public class CartRestController {
         return new ApiResponse<>(HttpStatus.OK.value(), "Cart taken successfully.",true);
     }
 
-    //@PostMapping
+
     @RequestMapping(value = "/public/cart/", method = RequestMethod.POST)
     public ApiResponse<Boolean> createCart(@RequestBody CartDto cartDto) {
         int seniorId = seniorService.createSenior(cartDto.getSenior().getEmail(), cartDto.getSenior().getUsername(), cartDto.getSenior().getCity());
@@ -130,7 +130,6 @@ public class CartRestController {
 
     @RequestMapping(value = "/public/cart/status", method = RequestMethod.GET)
     public ApiResponse<StatusDto> getCartStatus(@RequestParam Integer id) {
-        System.out.println(id+" idcko");
         try {
             Cart cart = cartService.findById(id);
             StatusDto statusDto = new StatusDto();
@@ -141,6 +140,11 @@ public class CartRestController {
         }catch (NoSuchElementException e){
             return new ApiResponse<>(HttpStatus.CONFLICT.value(), e.getMessage(),null);
         }
+    }
+
+    @RequestMapping(value = "/public/cart/top", method = RequestMethod.GET)
+    public ApiResponse<List<TopUserDto> > getTopUsers(){
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", cartService.countTopUsers());
     }
 
 

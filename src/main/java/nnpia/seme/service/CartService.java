@@ -1,10 +1,12 @@
 package nnpia.seme.service;
 
+import javafx.util.Pair;
 import nnpia.seme.dao.CartDao;
 import nnpia.seme.dao.CartItemDao;
 import nnpia.seme.dao.CartPaggingRepository;
 import nnpia.seme.model.Cart;
 import nnpia.seme.model.CartItem;
+import nnpia.seme.model.TopUserDto;
 import nnpia.seme.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -52,10 +54,6 @@ public class CartService {
 
     public List<Cart> findAll() {
         return cartDao.findAll();
-    }
-
-    public List<Cart> findAllFreeCards() {
-        return cartDao.findAll().stream().filter(cart -> !cart.isDone() && cart.getUser() == null).collect(Collectors.toList());
     }
 
     public List<Cart> findAllDoneByUser(Integer id) {
@@ -154,6 +152,26 @@ public class CartService {
             return new ArrayList<Cart>();
         }
     }
+
+    public List<TopUserDto> countTopUsers(){
+        List<User> listUsers = userService.findAll();
+        List<TopUserDto> counts = new ArrayList<>();
+
+        for (User user: listUsers) {
+            counts.add(new TopUserDto(user.getUsername(), cartDao.countByUserIdAndDone(user.getId(), true)));
+        }
+
+        counts = counts.stream().sorted((o1, o2) -> Long.compare(o1.getCount(), o2.getCount())).collect(Collectors.toList());
+        counts.subList(0, 3).clear();
+        for (TopUserDto user: counts) {
+            System.out.println(user.getUsername()+" "+user.getCount());
+
+        }
+
+
+        return counts;
+    }
+
 
 
     public long getTotalPages() {
