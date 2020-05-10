@@ -13,10 +13,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 @AutoConfigureTestDatabase(replace= AutoConfigureTestDatabase.Replace.NONE)
 @RunWith(SpringRunner.class)
 @DataJpaTest
-public class UserDaoTest {
+public class UserRepositoryTest {
 
     @Autowired
-    UserDao userDao;
+    UserRepository userRepository;
 
     @Test
     public void testAdd(){
@@ -26,12 +26,12 @@ public class UserDaoTest {
         user.setUsername("pan");
         user.setPassword("hash");
 
-        User save = userDao.save(user);
+        User save = userRepository.save(user);
         System.out.println(save.getId()+"++");
 
-        User u = userDao.findByEmail("test2@test.cz");
+        User u = userRepository.findByEmail("test2@test.cz");
         System.out.println(u.getId()+" "+u.getEmail()+" "+u.getCreate_time());
-        Assertions.assertEquals(4, userDao.findAll().size());
+        Assertions.assertEquals(4, userRepository.findAll().size());
 
     }
 }

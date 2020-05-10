@@ -16,7 +16,7 @@ public class Cart {
     @Column(nullable = false)
     private boolean done;
 
-    @Column(nullable = false)
+    @Column
     @CreationTimestamp
     private Timestamp time;
 

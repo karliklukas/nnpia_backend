@@ -1,6 +1,6 @@
 package nnpia.seme.service;
 
-import nnpia.seme.dao.CartItemDao;
+import nnpia.seme.dao.CartItemRepository;
 import nnpia.seme.model.Cart;
 import nnpia.seme.model.CartItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +14,15 @@ import java.util.NoSuchElementException;
 @Transactional
 public class CartItemService {
     @Autowired
-    private CartItemDao cartItemDao;
+    private CartItemRepository cartItemRepository;
 
     public List<CartItem> findAll() {
-        return cartItemDao.findAll();
+        return cartItemRepository.findAll();
     }
 
     public CartItem findById(Integer id) {
-        if (cartItemDao.findById(id).isPresent()) {
-            return cartItemDao.findById(id).get();
+        if (cartItemRepository.findById(id).isPresent()) {
+            return cartItemRepository.findById(id).get();
         } else {
             throw new NoSuchElementException("Product with ID: " + id + " was not found!");
         }
@@ -32,7 +32,7 @@ public class CartItemService {
         CartItem cartItem = new CartItem();
         cartItem.setItem(text);
         cartItem.setCart(cart);
-        cartItemDao.save(cartItem);
+        cartItemRepository.save(cartItem);
     }
 
 }

@@ -1,8 +1,6 @@
 package nnpia.seme.service;
 
-import javafx.util.Pair;
-import nnpia.seme.dao.CartDao;
-import nnpia.seme.dao.CartItemDao;
+import nnpia.seme.dao.CartRepository;
 import nnpia.seme.dao.CartPaggingRepository;
 import nnpia.seme.model.Cart;
 import nnpia.seme.model.CartItem;
@@ -30,7 +28,7 @@ public class CartService {
     private long totalPages;
 
     //@Autowired
-    private CartDao cartDao;
+    private CartRepository cartRepository;
 
     @Autowired
     private CartPaggingRepository cartPagging;
@@ -45,42 +43,42 @@ public class CartService {
     private UserService userService;
 
     @Autowired
-    public CartService(CartDao cartDao, CartItemService cartItemService, SeniorService seniorService, UserService userService) {
-        this.cartDao = cartDao;
+    public CartService(CartRepository cartRepository, CartItemService cartItemService, SeniorService seniorService, UserService userService) {
+        this.cartRepository = cartRepository;
         this.cartItemService = cartItemService;
         this.seniorService = seniorService;
         this.userService = userService;
     }
 
     public List<Cart> findAll() {
-        return cartDao.findAll();
+        return cartRepository.findAll();
     }
 
     public List<Cart> findAllDoneByUser(Integer id) {
         User user = userService.findById(id);
-        return cartDao.findAll().stream().filter(cart -> cart.isDone() && cart.getUser().equals(user)).collect(Collectors.toList());
+        return cartRepository.findAll().stream().filter(cart -> cart.isDone() && cart.getUser().equals(user)).collect(Collectors.toList());
     }
 
     public List<Cart> findAllWaitingByUser(Integer id) {
         User user = userService.findById(id);
-        return cartDao.findAll().stream().filter(cart -> !cart.isDone() && cart.getUser().equals(user)).collect(Collectors.toList());
+        return cartRepository.findAll().stream().filter(cart -> !cart.isDone() && cart.getUser().equals(user)).collect(Collectors.toList());
     }
 
     public Long countFreeCarts() {
-        return cartDao.countByUserIdAndDone(null, false);
+        return cartRepository.countByUserIdAndDone(null, false);
     }
 
     public Long countDoneByUser(Integer id) {
-        return cartDao.countByUserIdAndDone(id, true);
+        return cartRepository.countByUserIdAndDone(id, true);
     }
 
     public Long countWaitingByUser(Integer id) {
-        return cartDao.countByUserIdAndDone(id, false);
+        return cartRepository.countByUserIdAndDone(id, false);
     }
 
     public Cart findById(Integer id) {
-        if (cartDao.findById(id).isPresent()) {
-            return cartDao.findById(id).get();
+        if (cartRepository.findById(id).isPresent()) {
+            return cartRepository.findById(id).get();
         } else {
             throw new NoSuchElementException("Order with ID: " + id + " was not found!");
         }
@@ -94,14 +92,14 @@ public class CartService {
     public void setCartDone(Integer id) {
         Cart cart = findById(id);
         cart.setDone(true);
-        cartDao.save(cart);
+        cartRepository.save(cart);
     }
 
     public Cart setCartToUser(Integer idCart, String username) {
         User user = userService.findOne(username);
-        Cart cart = cartDao.getOne(idCart);
+        Cart cart = cartRepository.getOne(idCart);
         cart.setUser(user);
-        return cartDao.save(cart);
+        return cartRepository.save(cart);
     }
 
     public void addItemToCart(String item) {
@@ -112,7 +110,7 @@ public class CartService {
         Cart cart = new Cart();
         cart.setDone(false);
         cart.setSenior(seniorService.findById(id));
-        cart = cartDao.save(cart);
+        cart = cartRepository.save(cart);
 
         for (String item : itemList) {
             cartItemService.addCartItem(item, cart);
@@ -158,21 +156,14 @@ public class CartService {
         List<TopUserDto> counts = new ArrayList<>();
 
         for (User user: listUsers) {
-            counts.add(new TopUserDto(user.getUsername(), cartDao.countByUserIdAndDone(user.getId(), true)));
+            counts.add(new TopUserDto(user.getUsername(), cartRepository.countByUserIdAndDone(user.getId(), true)));
         }
 
-        counts = counts.stream().sorted((o1, o2) -> Long.compare(o1.getCount(), o2.getCount())).collect(Collectors.toList());
+        counts = counts.stream().sorted(Comparator.comparingLong(TopUserDto::getCount)).collect(Collectors.toList());
         counts.subList(0, 3).clear();
-        for (TopUserDto user: counts) {
-            System.out.println(user.getUsername()+" "+user.getCount());
-
-        }
-
 
         return counts;
     }
-
-
 
     public long getTotalPages() {
         return totalPages;

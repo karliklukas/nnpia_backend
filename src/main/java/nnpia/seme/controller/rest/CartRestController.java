@@ -105,13 +105,12 @@ public class CartRestController {
     }
 
 
-    @RequestMapping(value = "/public/cart/", method = RequestMethod.POST)
+    @RequestMapping(value = "/public/cart", method = RequestMethod.POST)
     public ApiResponse<Boolean> createCart(@RequestBody CartDto cartDto) {
         int seniorId = seniorService.createSenior(cartDto.getSenior().getEmail(), cartDto.getSenior().getUsername(), cartDto.getSenior().getCity());
 
         for (String s: cartDto.getItemList()) {
             cartService.addItemToCart(s);
-            System.out.println(s);
         }
         Integer cartId = cartService.completeOrder(seniorId);
 

@@ -37,10 +37,8 @@ public class SeniorRestController {
 
     //@GetMapping("{email}")
     @RequestMapping(value = "/api/senior/{email}", method = RequestMethod.GET)
-    public int getIdByEmail(@PathVariable("email") String email) {
+    public Senior getIdByEmail(@PathVariable("email") String email) {
         System.out.println(email+"aaaa");
-        Senior s = seniorService.findByEmail(email);
-        return s.getId();
-        //cartService.completeOrder(id);
+        return seniorService.findByEmail(email);
     }
 }

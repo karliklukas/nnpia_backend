@@ -1,6 +1,6 @@
 package nnpia.seme.service;
 
-import nnpia.seme.dao.UserDao;
+import nnpia.seme.dao.UserRepository;
 import nnpia.seme.model.User;
 import nnpia.seme.model.UserEditDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +21,13 @@ import java.util.NoSuchElementException;
 public class UserService implements UserDetailsService {
 
     @Autowired
-    private UserDao userDao;
+    private UserRepository userRepository;
 
     @Autowired
     private BCryptPasswordEncoder bcryptEncoder;
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDao.findByUsername(username);
+        User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new UsernameNotFoundException("Invalid username or password.");
         }
@@ -39,27 +39,27 @@ public class UserService implements UserDetailsService {
     }
 
     public List<User> findAll() {
-        return userDao.findAll();
+        return userRepository.findAll();
     }
 
     public User findById(Integer id) {
-        if (userDao.findById(id).isPresent()) {
-            return userDao.findById(id).get();
+        if (userRepository.findById(id).isPresent()) {
+            return userRepository.findById(id).get();
         } else {
             throw new NoSuchElementException("Product with ID: " + id + " was not found!");
         }
     }
 
     public User findByEmail(String email) {
-        if (userDao.findByEmail(email) != null) {
-            return userDao.findByEmail(email);
+        if (userRepository.findByEmail(email) != null) {
+            return userRepository.findByEmail(email);
         } else {
-            throw new NoSuchElementException("Product with ID: " + email + " was not found!");
+            throw new NoSuchElementException("Product with email: " + email + " was not found!");
         }
     }
 
     public User findOne(String username) {
-        return userDao.findByUsername(username);
+        return userRepository.findByUsername(username);
     }
 
     public User addUser(String email, String username, String password) {
@@ -67,7 +67,7 @@ public class UserService implements UserDetailsService {
         user.setEmail(email);
         user.setUsername(username);
         user.setPassword(bcryptEncoder.encode(password));
-        return userDao.save(user);
+        return userRepository.save(user);
     }
 
     public boolean updatePassword(UserEditDto userIn) {
@@ -76,7 +76,7 @@ public class UserService implements UserDetailsService {
         if (user != null) {
             if (bcryptEncoder.matches(userIn.getPasswordOld(), user.getPassword())) {
                 user.setPassword(bcryptEncoder.encode(userIn.getPasswordNew()));
-                userDao.save(user);
+                userRepository.save(user);
                 return true;
             }
         }
