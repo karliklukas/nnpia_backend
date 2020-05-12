@@ -3,7 +3,7 @@ package nnpia.seme.controller;
 import nnpia.seme.config.JwtTokenUtil;
 import nnpia.seme.model.ApiResponse;
 import nnpia.seme.model.AuthToken;
-import nnpia.seme.model.LoginUser;
+import nnpia.seme.dto.LoginUser;
 import nnpia.seme.model.User;
 import nnpia.seme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

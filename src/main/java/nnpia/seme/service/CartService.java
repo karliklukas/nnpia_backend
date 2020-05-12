@@ -2,21 +2,19 @@ package nnpia.seme.service;
 
 import nnpia.seme.dao.CartRepository;
 import nnpia.seme.dao.CartPaggingRepository;
-import nnpia.seme.model.Cart;
-import nnpia.seme.model.CartItem;
-import nnpia.seme.model.TopUserDto;
-import nnpia.seme.model.User;
+import nnpia.seme.dto.CartPagingDto;
+import nnpia.seme.dto.TopUserDto;
+import nnpia.seme.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.transaction.Transactional;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,30 +22,21 @@ import java.util.stream.Collectors;
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 @Transactional
 public class CartService {
-    private List<String> itemList = new ArrayList<>();
-    private long totalPages;
+    private final List<String> itemList = new ArrayList<>();
 
-    //@Autowired
-    private CartRepository cartRepository;
-
-    @Autowired
-    private CartPaggingRepository cartPagging;
-
-    //@Autowired
-    private CartItemService cartItemService;
-
-    //@Autowired
-    private SeniorService seniorService;
-
-    //@Autowired
-    private UserService userService;
+    private final CartRepository cartRepository;
+    private final CartPaggingRepository cartPaging;
+    private final CartItemService cartItemService;
+    private final SeniorService seniorService;
+    private final UserService userService;
 
     @Autowired
-    public CartService(CartRepository cartRepository, CartItemService cartItemService, SeniorService seniorService, UserService userService) {
+    public CartService(CartRepository cartRepository, CartItemService cartItemService, SeniorService seniorService, UserService userService, CartPaggingRepository cartPaging) {
         this.cartRepository = cartRepository;
         this.cartItemService = cartItemService;
         this.seniorService = seniorService;
         this.userService = userService;
+        this.cartPaging = cartPaging;
     }
 
     public List<Cart> findAll() {
@@ -90,8 +79,10 @@ public class CartService {
     }
 
     public void setCartDone(Integer id) {
+        Date date= new Date();
         Cart cart = findById(id);
         cart.setDone(true);
+        cart.setTimeDone(new Timestamp(date.getTime()));
         cartRepository.save(cart);
     }
 
@@ -120,52 +111,35 @@ public class CartService {
         return cart.getId();
     }
 
-    public List<Cart> getAllFreeCartsPaSo(Integer pageNo, Integer pageSize, String sortBy, Integer userId, Boolean done) {
-        Pageable paging;
-        switch (sortBy) {
-            case "time":
-                paging = PageRequest.of(pageNo, pageSize, Sort.by("idcart").ascending());
-                break;
-            case "timeDesc":
-                paging = PageRequest.of(pageNo, pageSize, Sort.by("idcart").descending());
-                break;
-            case "city":
-                paging = PageRequest.of(pageNo, pageSize, Sort.by("senior.city"));
-                break;
-            default:
-                paging = PageRequest.of(pageNo, pageSize);
-                break;
-        }
+    public CartPagingDto getAllFreeCartsPaSo(Pageable paging, Integer userId, Boolean done) {
         Page<Cart> pagedResult;
-        if (userId==-1){
-            pagedResult = cartPagging.findAllByUserIdAndDone(null, done ,paging);
-        }else{
-            pagedResult = cartPagging.findAllByUserIdAndDone(userId, done ,paging);
+        if (userId == -1) {
+            pagedResult = cartPaging.findAllByUserIdAndDone(null, done, paging);
+        } else {
+            pagedResult = cartPaging.findAllByUserIdAndDone(userId, done, paging);
         }
-        totalPages = pagedResult.getTotalElements();
 
         if (pagedResult.hasContent()) {
-            return pagedResult.getContent();
+            CartPagingDto cart = new CartPagingDto();
+            cart.setList(pagedResult.getContent());
+            cart.setTotalElements(pagedResult.getTotalElements());
+            return cart;
         } else {
-            return new ArrayList<Cart>();
+            return new CartPagingDto();
         }
     }
 
-    public List<TopUserDto> countTopUsers(){
+    public List<TopUserDto> countTopUsers() {
         List<User> listUsers = userService.findAll();
         List<TopUserDto> counts = new ArrayList<>();
 
-        for (User user: listUsers) {
+        for (User user : listUsers) {
             counts.add(new TopUserDto(user.getUsername(), cartRepository.countByUserIdAndDone(user.getId(), true)));
         }
 
         counts = counts.stream().sorted(Comparator.comparingLong(TopUserDto::getCount)).collect(Collectors.toList());
         counts.subList(0, 3).clear();
 
-        return counts;
-    }
-
-    public long getTotalPages() {
-        return totalPages;
+        return counts.subList(counts.size() - 3, counts.size());
     }
 }

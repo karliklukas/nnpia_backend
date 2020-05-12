@@ -1,7 +1,8 @@
-package nnpia.seme.model;
+package nnpia.seme.dto;
+
+import nnpia.seme.model.Senior;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CartDto {

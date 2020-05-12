@@ -1,4 +1,4 @@
-package nnpia.seme.model;
+package nnpia.seme.dto;
 
 public class TopUserDto {
     private String username;

@@ -1,6 +1,7 @@
 package nnpia.seme.service;
 
 import nnpia.seme.Creator;
+import nnpia.seme.dao.CartPaggingRepository;
 import nnpia.seme.dao.CartRepository;
 import nnpia.seme.model.Cart;
 import nnpia.seme.model.Senior;
@@ -33,16 +34,14 @@ public class CartServiceTest {
     private CartService cartService;
     @Autowired
     private CartRepository cartRepository;
-
     @Autowired
     private CartItemService cartItemService;
-
     @Autowired
     private SeniorService seniorService;
-
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private CartPaggingRepository paggingRepository;
     @Autowired
     private Creator creator;
 
@@ -82,7 +81,7 @@ public class CartServiceTest {
 
         System.out.println(cartRepository.findAll().get(0).getId());
 
-        cartService = new CartService(cartRepository, cartItemService, seniorService, userService);
+        cartService = new CartService(cartRepository,cartItemService, seniorService, userService, paggingRepository);
 
         List<Cart> allWaiting = cartService.findAllDoneByUser(1);
         System.out.println(allWaiting.get(0).getId()+"--"+allWaiting.get(0).isDone());

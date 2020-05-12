@@ -2,7 +2,7 @@ package nnpia.seme.service;
 
 import nnpia.seme.dao.UserRepository;
 import nnpia.seme.model.User;
-import nnpia.seme.model.UserEditDto;
+import nnpia.seme.dto.UserEditDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,7 +46,7 @@ public class UserService implements UserDetailsService {
         if (userRepository.findById(id).isPresent()) {
             return userRepository.findById(id).get();
         } else {
-            throw new NoSuchElementException("Product with ID: " + id + " was not found!");
+            throw new NoSuchElementException("User with ID: " + id + " was not found!");
         }
     }
 
@@ -54,7 +54,7 @@ public class UserService implements UserDetailsService {
         if (userRepository.findByEmail(email) != null) {
             return userRepository.findByEmail(email);
         } else {
-            throw new NoSuchElementException("Product with email: " + email + " was not found!");
+            throw new NoSuchElementException("User with email: " + email + " was not found!");
         }
     }
 

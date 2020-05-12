@@ -24,7 +24,7 @@ public class CartItemService {
         if (cartItemRepository.findById(id).isPresent()) {
             return cartItemRepository.findById(id).get();
         } else {
-            throw new NoSuchElementException("Product with ID: " + id + " was not found!");
+            throw new NoSuchElementException("CartItem with ID: " + id + " was not found!");
         }
     }
 

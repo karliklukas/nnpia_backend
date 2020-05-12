@@ -20,6 +20,9 @@ public class Cart {
     @CreationTimestamp
     private Timestamp time;
 
+    @Column(name = "time_done")
+    private Timestamp timeDone;
+
     @ManyToOne
     private Senior senior;
 
@@ -76,5 +79,21 @@ public class Cart {
 
     public void setItems(Set<CartItem> items) {
         this.items = items;
+    }
+
+    public Integer getIdcart() {
+        return idcart;
+    }
+
+    public void setIdcart(Integer idcart) {
+        this.idcart = idcart;
+    }
+
+    public Timestamp getTimeDone() {
+        return timeDone;
+    }
+
+    public void setTimeDone(Timestamp timeDone) {
+        this.timeDone = timeDone;
     }
 }

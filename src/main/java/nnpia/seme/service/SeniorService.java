@@ -16,10 +16,9 @@ import java.util.NoSuchElementException;
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 @Transactional
 public class SeniorService {
+
     @Autowired
     private SeniorRepository seniorRepository;
-
-    private  Senior senior;
 
     public List<Senior> findAll() {
         return seniorRepository.findAll();
@@ -29,7 +28,7 @@ public class SeniorService {
         if (seniorRepository.findById(id).isPresent()) {
             return seniorRepository.findById(id).get();
         } else {
-            throw new NoSuchElementException("Product with ID: " + id + " was not found!");
+            throw new NoSuchElementException("Senior with ID: " + id + " was not found!");
         }
     }
 
@@ -37,17 +36,17 @@ public class SeniorService {
         if (seniorRepository.findByEmail(email) != null) {
             return seniorRepository.findByEmail(email);
         } else {
-            throw new NoSuchElementException("Product with emial: " + email + " was not found!");
+            throw new NoSuchElementException("Senior with email: " + email + " was not found!");
         }
     }
 
     public int createSenior(String email, String username, String city){
-        senior = new Senior();
+        Senior senior = new Senior();
         senior.setEmail(email);
         senior.setUsername(username);
         senior.setCity(city);
         senior = seniorRepository.saveAndFlush(senior);
-        System.out.println("seniorServ "+senior.getId());
+
         return senior.getId();
     }
 

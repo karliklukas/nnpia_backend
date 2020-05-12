@@ -1,4 +1,4 @@
-package nnpia.seme.model;
+package nnpia.seme.dto;
 
 public class StatusDto {
     private boolean done;
