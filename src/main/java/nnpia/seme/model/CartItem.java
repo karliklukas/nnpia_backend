@@ -14,9 +14,6 @@ public class CartItem {
     @Column(nullable = false)
     private String item;
 
-    @Column(nullable = false)
-    private boolean done;
-
     @ManyToOne
     @JoinColumn(name = "cart_id")
     @JsonIgnore
@@ -46,11 +43,4 @@ public class CartItem {
         this.cart = cart;
     }
 
-    public Boolean getDone() {
-        return done;
-    }
-
-    public void setDone(Boolean done) {
-        this.done = done;
-    }
 }
