@@ -34,5 +34,5 @@ build/
 .idea/inspectionProfiles/Project_Default.xml
 .idea/modules.xml
 .idea/
-.src/main/resources/application-local.properties
-.src/main/resources/application-heroku.properties
+src/main/resources/application-local.properties
+src/main/resources/application-heroku.properties
