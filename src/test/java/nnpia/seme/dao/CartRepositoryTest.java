@@ -30,7 +30,7 @@ public class CartRepositoryTest {
 
     @Test
     public void testAdd(){
-
+        int initSize =  cartRepository.findAll().size();
         User user = new User();
         user.setEmail("cartUser@test.cz");
         user.setUsername("pan");
@@ -46,33 +46,11 @@ public class CartRepositoryTest {
         Cart cart = new Cart();
         cart.setDone(false);
         cart.setSenior(senior);
-       // cart.setUser(user);
+        cart.setUser(user);
 
         cartRepository.save(cart);
-        List<Cart> all = cartRepository.findAll();
 
-        for (Cart v :all) {
-            if (v.getUser() != null){
-                System.out.println(v.getId()+" "+v.getSenior().getEmail()+" "+ v.getUser().getEmail());
-            }else {
-                System.out.println(v.getId()+" "+v.getSenior().getEmail()+" null");
-            }
-
-        }
-
-        // Senior s = cartDao.findByEmail("test@test.cz");
-        //System.out.println(s.getId()+" "+s.getEmail()+" "+s.getUsername()+" "+s.getCity()+" "+s.getCreate_time());
-        Assertions.assertEquals(2, cartRepository.findAll().size());
+        Assertions.assertEquals(initSize+1, cartRepository.findAll().size());
     }
 
-   /* @Test
-    public void testAddMock(){
-        when(dao.getEmployeeById(1)).thenReturn(new EmployeeVO(1,"Lokesh","Gupta","user@email.com"));
-
-        EmployeeVO emp = manager.getEmployeeById(1);
-
-        assertEquals("Lokesh", emp.getFirstName());
-        assertEquals("Gupta", emp.getLastName());
-        assertEquals("user@email.com", emp.getEmail());
-    }*/
 }

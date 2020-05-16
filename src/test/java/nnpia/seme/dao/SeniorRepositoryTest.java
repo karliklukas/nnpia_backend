@@ -20,14 +20,14 @@ public class SeniorRepositoryTest {
     @Test
     public void testAdd(){
         Senior senior = new Senior();
-        senior.setEmail("test@test.cz");
-        senior.setUsername("Pepa");
+        senior.setEmail("testAdd@test.cz");
+        senior.setUsername("Pepa Hron");
         senior.setCity("Praha");
 
         seniorRepository.save(senior);
 
-        Senior s = seniorRepository.findByEmail("test@test.cz");
-        System.out.println(s.getId()+" "+s.getEmail()+" "+s.getUsername()+" "+s.getCity()+" "+s.getCreate_time());
-        Assertions.assertEquals(1, seniorRepository.findAll().size());
+        Senior s = seniorRepository.findByEmail("testAdd@test.cz");
+
+        Assertions.assertEquals("Pepa Hron", s.getUsername());
     }
 }

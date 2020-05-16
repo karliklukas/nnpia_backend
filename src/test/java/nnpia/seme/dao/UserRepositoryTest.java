@@ -21,17 +21,15 @@ public class UserRepositoryTest {
     @Test
     public void testAdd(){
         User user = new User();
-        String test = "test";
-        user.setEmail("test2@test.cz");
+        user.setEmail("testUserAdd@test.cz");
         user.setUsername("pan");
         user.setPassword("hash");
 
         User save = userRepository.save(user);
-        System.out.println(save.getId()+"++");
 
-        User u = userRepository.findByEmail("test2@test.cz");
-        System.out.println(u.getId()+" "+u.getEmail()+" "+u.getCreate_time());
-        Assertions.assertEquals(4, userRepository.findAll().size());
+        User u = userRepository.findByEmail("testUserAdd@test.cz");
+
+        Assertions.assertEquals("pan", u.getUsername());
 
     }
 }

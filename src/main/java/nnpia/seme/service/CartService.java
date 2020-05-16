@@ -138,7 +138,6 @@ public class CartService {
         }
 
         counts = counts.stream().sorted(Comparator.comparingLong(TopUserDto::getCount)).collect(Collectors.toList());
-        counts.subList(0, 3).clear();
 
         return counts.subList(counts.size() - 3, counts.size());
     }

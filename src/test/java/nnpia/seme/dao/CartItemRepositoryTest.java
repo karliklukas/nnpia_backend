@@ -2,6 +2,7 @@ package nnpia.seme.dao;
 
 import nnpia.seme.model.Cart;
 import nnpia.seme.model.CartItem;
+import nnpia.seme.model.Senior;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -29,51 +30,29 @@ public class CartItemRepositoryTest {
 
     @Test
     public void testAdd(){
-        /*User user = new User();
-        user.setEmail("cartUser@test.cz");
-        user.setUsername("pan");
-        user.setPassword("hash");
-        userDao.save(user);
-
+        int initSizeItems = cartItemRepository.findAll().size();
         Senior senior = new Senior();
         senior.setEmail("cartSen@test.cz");
         senior.setUsername("Pepa");
         senior.setCity("Praha");
-        seniorDao.save(senior);
+        seniorRepository.save(senior);
 
         Cart cart = new Cart();
         cart.setDone(false);
         cart.setSenior(senior);
-        cart.setUser(user);
-        cartDao.save(cart);*/
-        Cart cart = null;
-        Optional<Cart> op = cartRepository.findById(1);
-        if (op.isPresent()) {
-            cart = op.get();
-            System.out.println(cart.getId() + " " + cart.getSenior().getEmail() + " " + cart.getUser().getEmail());
-        }
+        cart = cartRepository.saveAndFlush(cart);
+
         CartItem item1 = new CartItem();
         item1.setItem("prvni");
         item1.setCart(cart);
         cartItemRepository.save(item1);
+
         CartItem item2 = new CartItem();
         item2.setItem("druhy");
         item2.setCart(cart);
-        cartItemRepository.save(item2);
+        item2 = cartItemRepository.save(item2);
 
-        List<CartItem> all = cartItemRepository.findAll();
-
-        for (CartItem v :all) {
-            System.out.println(v.getId()+" "+v.getCart().getId()+" "+ v.getItem());
-        }
-
-        Set<CartItem> items = cart.getItems();
-        for (CartItem it : items) {
-            System.out.println(it.getId()+"--"+it.getCart().getId()+"--"+ it.getItem());
-        }
-
-        //System.out.println(u.getId()+" "+u.getEmail()+" "+u.getCreate_time());
-        Assertions.assertEquals(2, cartItemRepository.findAll().size());
-
+        Assertions.assertEquals(initSizeItems+2, cartItemRepository.findAll().size());
+        Assertions.assertEquals(cart.getId(), item2.getCart().getId());
     }
 }

@@ -3,6 +3,7 @@ package nnpia.seme.service;
 import nnpia.seme.Creator;
 import nnpia.seme.dao.CartPaggingRepository;
 import nnpia.seme.dao.CartRepository;
+import nnpia.seme.dto.TopUserDto;
 import nnpia.seme.model.Cart;
 import nnpia.seme.model.Senior;
 import nnpia.seme.model.User;
@@ -33,31 +34,14 @@ public class CartServiceTest {
     @Autowired
     private CartService cartService;
     @Autowired
-    private CartRepository cartRepository;
-    @Autowired
     private CartItemService cartItemService;
     @Autowired
     private SeniorService seniorService;
-    @Autowired
-    private UserService userService;
     @Autowired
     private CartPaggingRepository paggingRepository;
     @Autowired
     private Creator creator;
 
-    @Test
-    public void findAllWaiting() {
-        List<Cart> allWaiting = cartService.findAllWaitingByUser(1);
-        System.out.println(allWaiting.get(0).getId());
-        Assertions.assertEquals(1, allWaiting.size());
-    }
-
-    @Test
-    public void findAllWaitingByUser() {
-        List<Cart> allWaiting = cartService.findAllWaitingByUser(11);
-        System.out.println(allWaiting.get(0).getId()+" "+allWaiting.get(0).getUser().getUsername());
-        Assertions.assertEquals(1, allWaiting.size());
-    }
 
     @Test
     public void findAllDoneMock() {
@@ -79,12 +63,10 @@ public class CartServiceTest {
         Mockito.when(cartRepository.findAll()).thenReturn(new ArrayList<Cart>(){{add(cart); add(cart1);}});
         Mockito.when(userService.findById(1)).thenReturn(user);
 
-        System.out.println(cartRepository.findAll().get(0).getId());
-
         cartService = new CartService(cartRepository,cartItemService, seniorService, userService, paggingRepository);
 
         List<Cart> allWaiting = cartService.findAllDoneByUser(1);
-        System.out.println(allWaiting.get(0).getId()+"--"+allWaiting.get(0).isDone());
+
         Assertions.assertEquals(1, allWaiting.size());
     }
 
@@ -107,10 +89,39 @@ public class CartServiceTest {
         cart.setUser(userFalse);
         cart.setItems(new HashSet<>());//Creater neumi vytvorit set
         cart.setTime(new Timestamp(date.getTime()));
+        cart.setTimeDone(new Timestamp(date.getTime()));
         creator.saveEntity(cart);
 
         Cart responseCart = cartService.setCartToUser(cart.getId(), user.getUsername());
         Assert.assertThat(responseCart.getUser().getUsername(), is("testProfile3"));
 
+    }
+
+    @Test
+    public void countTopUsersTest() {
+        CartRepository cartRepository = Mockito.mock(CartRepository.class);
+        UserService userService = Mockito.mock(UserService.class);
+        User user1 = new User();
+        user1.setId(1);
+        User user2 = new User();
+        user2.setId(2);
+        User user3 = new User();
+        user3.setId(3);
+        User user4 = new User();
+        user4.setId(4);
+
+        Mockito.when(userService.findAll()).thenReturn(new ArrayList<User>(){{add(user1); add(user2); add(user3); add(user4);}});
+        Mockito.when(cartRepository.countByUserIdAndDone(1, true)).thenReturn(10L);
+        Mockito.when(cartRepository.countByUserIdAndDone(2, true)).thenReturn(5L);
+        Mockito.when(cartRepository.countByUserIdAndDone(3, true)).thenReturn(9L);
+        Mockito.when(cartRepository.countByUserIdAndDone(4, true)).thenReturn(1L);
+
+
+        cartService = new CartService(cartRepository,cartItemService, seniorService, userService, paggingRepository);
+
+        List<TopUserDto> list = cartService.countTopUsers();
+
+        Assertions.assertEquals(3, list.size());
+        Assertions.assertEquals(10L, list.get(2).getCount());
     }
 }

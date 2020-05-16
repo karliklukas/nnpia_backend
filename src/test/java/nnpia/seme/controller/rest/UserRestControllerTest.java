@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@Rollback(true)
 public class UserRestControllerTest {
 
     @Autowired
