@@ -17,7 +17,16 @@ K lokálnímu spuštění je potřeba několik úkonů. Je nutné si vytvořit M
 Dále je nutné zapnout flyway (enable=true) a v nastavení IDE nastavit profil na `local`. Pak již 
 stačí jen zbuildovat mavení projekt.
 
-Služby:
+#### Kód
+Rozdělní kódu do balíčků 
+- config - konfigurační soubory, především pro Jwt autentizaci
+- controller - obsahuje API rozhranní
+- dao - obsahuje JPA repositories
+- dto - datové modely (dto)
+- model - datové modely (entity)
+- service - obsahuje servisní třídy
+
+#### Služby:
 
 /public - dostupné bez autentizace, primárně slouží k vytváření nákupních seznamů
 
